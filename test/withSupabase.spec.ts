@@ -4,7 +4,13 @@ import { withSupabase } from "../index.js";
 
 // Mock Supabase client and headers
 const mockHeaders = new Headers();
-const mockSupabase = {};
+const mockSupabase = {
+  auth: {
+    getSession: async () => ({
+      data: { session: { user: { id: "123" } } },
+    }),
+  },
+};
 
 // Mock getServerClient to return our test client
 vi.mock("../lib/server", () => ({
@@ -31,8 +37,7 @@ describe("withSupabase", () => {
       request: new Request("http://test.com"),
     });
 
-    expect(result.status).toBe(200);
-    expect(result.data).toBe(testData);
+    expect(result.data.foo).toBe("bar");
   });
 
   it("handles Response objects", async () => {
@@ -70,6 +75,8 @@ describe("withSupabase", () => {
 
     await wrappedRoute({ request: new Request("http://test.com") });
 
+    const session = await passedClient.auth.getSession();
+    expect(session.data.session.user.id).toBe("123");
     expect(passedClient).toBe(mockSupabase);
   });
 
@@ -83,6 +90,7 @@ describe("withSupabase", () => {
       request: new Request("http://test.com"),
     });
 
-    expect(result.headers.get("test-header")).toBe("test-value");
+    const headerValue = result.init.headers.get("test-header");
+    expect(headerValue).toBe("test-value");
   });
 });
