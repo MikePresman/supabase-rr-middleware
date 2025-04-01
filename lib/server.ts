@@ -3,12 +3,8 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from "@supabase/ssr";
-import { SupabaseConfig } from "./types";
 
-export const getServerClient = (
-  request: Request,
-  config: SupabaseConfig = {}
-) => {
+export const getServerClient = (request: Request) => {
   const headers = new Headers();
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
@@ -33,10 +29,6 @@ export const getServerClient = (
             )
           );
         },
-      },
-      auth: {
-        autoRefreshToken: config.auth?.autoRefreshToken ?? true,
-        persistSession: config.auth?.persistSession ?? true,
       },
     }
   );

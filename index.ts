@@ -54,7 +54,7 @@ export function withSupabase<Args extends { request: Request }, Return>(
 
 export function withAuth<Args extends { request: Request }, Return>(
   routeFunction: RouteFunction<
-    Args & { supabase: SupabaseClient; user: any },
+    Args & { supabase: SupabaseClient; user: unknown },
     Return
   >,
   redirectTo = "/login"
