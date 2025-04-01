@@ -1,6 +1,5 @@
-import { jest } from "globals";
 import { redirect } from "react-router";
-import * as assert from "uvu/assert";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { withSupabase } from "../index.js";
 
 // Mock Supabase client and headers
@@ -8,7 +7,7 @@ const mockHeaders = new Headers();
 const mockSupabase = {};
 
 // Mock getServerClient to return our test client
-jest.mock("../lib/server", () => ({
+vi.mock("../lib/server", () => ({
   getServerClient: () => ({
     supabase: mockSupabase,
     headers: mockHeaders,
@@ -20,70 +19,70 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
-test("withSupabase - handles plain data return", async () => {
-  const testData = { foo: "bar" };
-  const wrappedRoute = withSupabase(async ({ supabase: _ }) => testData);
+describe("withSupabase", () => {
+  it("handles plain data return", async () => {
+    const testData = { foo: "bar" };
+    const wrappedRoute = withSupabase(async ({ supabase: _ }) => testData);
 
-  const result = await wrappedRoute({
-    request: new Request("http://test.com"),
+    const result = await wrappedRoute({
+      request: new Request("http://test.com"),
+    });
+
+    expect(result.status).toBe(200);
+    expect(result.data).toBe(testData);
   });
 
-  assert.equal(result.status, 200);
-  assert.equal(result.data, testData);
-});
+  it("handles Response objects", async () => {
+    const testResponse = new Response("test");
+    const wrappedRoute = withSupabase(async ({ supabase: _ }) => testResponse);
 
-test("withSupabase - handles Response objects", async () => {
-  const testResponse = new Response("test");
-  const wrappedRoute = withSupabase(async ({ supabase: _ }) => testResponse);
+    const result = await wrappedRoute({
+      request: new Request("http://test.com"),
+    });
 
-  const result = await wrappedRoute({
-    request: new Request("http://test.com"),
+    expect(result).toBeInstanceOf(Response);
   });
 
-  assert.instance(result, Response);
-});
+  it("handles redirect", async () => {
+    const redirectUrl = "/somewhere";
+    const wrappedRoute = withSupabase(async ({ supabase: _ }) =>
+      redirect(redirectUrl)
+    );
 
-test("withSupabase - handles redirect", async () => {
-  const redirectUrl = "/somewhere";
-  const wrappedRoute = withSupabase(async ({ supabase: _ }) =>
-    redirect(redirectUrl)
-  );
+    const result = await wrappedRoute({
+      request: new Request("http://test.com"),
+    });
 
-  const result = await wrappedRoute({
-    request: new Request("http://test.com"),
+    expect(result).toBeInstanceOf(Response);
+    expect(result.status).toBe(302);
+    expect(result.headers.get("Location")).toBe(redirectUrl);
   });
 
-  assert.instance(result, Response);
-  assert.equal(result.status, 302);
-  assert.equal(result.headers.get("Location"), redirectUrl);
-});
+  it("passes supabase client to route function", async () => {
+    let passedClient;
+    const wrappedRoute = withSupabase(async ({ supabase }) => {
+      passedClient = supabase;
+      return { success: true };
+    });
 
-test("withSupabase - passes supabase client to route function", async () => {
-  let passedClient;
-  const wrappedRoute = withSupabase(async ({ supabase }) => {
-    passedClient = supabase;
-    return { success: true };
+    await wrappedRoute({ request: new Request("http://test.com") });
+
+    expect(passedClient).toBe(mockSupabase);
   });
 
-  await wrappedRoute({ request: new Request("http://test.com") });
+  it("copies headers to response", async () => {
+    mockHeaders.set("test-header", "test-value");
+    const wrappedRoute = withSupabase(async ({ supabase: _ }) => ({
+      success: true,
+    }));
 
-  assert.equal(passedClient, mockSupabase);
-});
+    const result = await wrappedRoute({
+      request: new Request("http://test.com"),
+    });
 
-test("withSupabase - copies headers to response", async () => {
-  mockHeaders.set("test-header", "test-value");
-  const wrappedRoute = withSupabase(async ({ supabase: _ }) => ({
-    success: true,
-  }));
-
-  const result = await wrappedRoute({
-    request: new Request("http://test.com"),
+    expect(result.headers.get("test-header")).toBe("test-value");
   });
-
-  assert.equal(result.headers.get("test-header"), "test-value");
 });
-
-test.run();
