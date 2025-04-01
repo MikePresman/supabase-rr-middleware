@@ -2,8 +2,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { data, redirect } from "react-router";
 import { getServerClient } from "./lib/server";
-
-type RouteFunction<Args, Return> = (args: Args) => Promise<Return>;
+import { RouteFunction } from "./lib/types";
 
 /**
  * Middleware to automatically handle Supabase auth headers

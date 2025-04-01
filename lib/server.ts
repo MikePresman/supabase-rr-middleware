@@ -3,8 +3,12 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from "@supabase/ssr";
+import { SupabaseConfig } from "./types";
 
-export const getServerClient = (request: Request) => {
+export const getServerClient = (
+  request: Request,
+  config: SupabaseConfig = {}
+) => {
   const headers = new Headers();
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
@@ -12,7 +16,14 @@ export const getServerClient = (request: Request) => {
     {
       cookies: {
         getAll() {
-          return parseCookieHeader(request.headers.get("Cookie") ?? "") ?? {};
+          const cookies = parseCookieHeader(
+            request.headers.get("Cookie") ?? ""
+          );
+          if (!cookies) return null;
+          return Object.entries(cookies).map(([name, value]) => ({
+            name,
+            value: value ?? "",
+          }));
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -24,13 +35,11 @@ export const getServerClient = (request: Request) => {
         },
       },
       auth: {
-        autoRefreshToken: true,
-        persistSession: true,
+        autoRefreshToken: config.auth?.autoRefreshToken ?? true,
+        persistSession: config.auth?.persistSession ?? true,
       },
     }
   );
 
   return { supabase, headers };
 };
-
-//todo - release this all as a package
