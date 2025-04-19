@@ -18,7 +18,7 @@ export const getServerClient = (request: Request) => {
           if (!cookies) return null;
           return Object.entries(cookies).map(([name, value]) => ({
             name,
-            value: value ?? "",
+            value: value as unknown as string,
           }));
         },
         setAll(cookiesToSet) {
