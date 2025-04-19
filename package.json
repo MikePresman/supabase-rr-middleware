@@ -1,17 +1,31 @@
 {
   "name": "supabase-rr-middleware",
   "version": "1.0.0",
-  "description": "react-router middleware and supabase",
-  "main": "index.js",
+  "description": "React Router middleware for Supabase authentication and session management",
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./esm/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "test": "vitest",
-    "test:typescript": "tsc"
+    "test:typescript": "tsc --noEmit",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,10 @@
+test/
+examples/
+.github/
+.git/
+.gitignore
+.DS_Store
+tsconfig.json
+jest.config.ts
+eslint.config.js
+pnpm-lock.yaml 

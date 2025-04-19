@@ -52,9 +52,14 @@ export function withSupabase<Args extends { request: Request }, Return>(
  * Middleware that requires authentication
  */
 
+export interface AuthUser {
+  id: string;
+  [key: string]: any;
+}
+
 export function withAuth<Args extends { request: Request }, Return>(
   routeFunction: RouteFunction<
-    Args & { supabase: SupabaseClient; user: unknown },
+    Args & { supabase: SupabaseClient; user: AuthUser },
     Return
   >,
   redirectTo = "/login"
