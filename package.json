@@ -1,6 +1,6 @@
 {
   "name": "supabase-rr-middleware",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Router middleware for Supabase authentication and session management",
   "type": "module",
   "main": "./dist/index.js",
